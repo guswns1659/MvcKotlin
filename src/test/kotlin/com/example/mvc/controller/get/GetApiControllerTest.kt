@@ -1,5 +1,6 @@
 package com.example.mvc.controller.get
 
+import com.example.mvc.model.http.UserRequest
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -67,5 +68,29 @@ class GetApiControllerTest {
                 .consumeWith {
                     assertThat(it.responseBody?.let {it1 -> String(it1)}).isEqualTo(expected)
                 }
+    }
+
+    @DisplayName("RequestDTO을 이용한 GetMapping 테스트")
+    @ParameterizedTest
+    @CsvSource("jack,010-7720-7957")
+    fun getQueryParamWithDTO(name: String, phoneNumber: String) {
+        // given
+        val requestUrl: String = LOCALHOST + port + REQUEST_MAPPING +
+                "get-mapping/query-param/object?name=" + name + "&phoneNumber=" + phoneNumber
+
+        // when
+        val responseBody = webTestClient.get()
+                .uri(requestUrl)
+                .accept(MediaType.APPLICATION_JSON)
+                .exchange()
+                .expectStatus().isOk
+                .expectBody(UserRequest::class.java)
+                .returnResult().responseBody
+
+        // then
+        if (responseBody != null) {
+            assertThat(responseBody.name).isEqualTo(name)
+            assertThat(responseBody.phoneNumber).isEqualTo(phoneNumber)
+        }
     }
 }
